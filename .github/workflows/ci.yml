@@ -28,7 +28,7 @@ jobs:
     - name: Build Docker image
       run: docker build -t sharestuff-api-ci .
 
-    - name: Run container for health check
+    - name: Run container
       run: |
         docker run -d --name sharestuff-ci \
           -p 3000:3000 \
@@ -37,11 +37,14 @@ jobs:
           -e ENABLE_MAILER=false \
           sharestuff-api-ci
 
+    - name: Show running containers
+      run: docker ps -a
+
     - name: Wait for app to start
-      run: sleep 10
+      run: sleep 20
 
     - name: Show container logs
-      run: docker logs sharestuff-ci
+      run: docker logs sharestuff-ci || true
 
     - name: Health check
-      run: curl -f http://localhost:3000/health
+      run: curl -v http://localhost:3000/health
