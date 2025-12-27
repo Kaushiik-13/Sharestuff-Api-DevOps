@@ -30,7 +30,8 @@ jobs:
 
     - name: Run container for health check
       run: |
-        docker run -d -p 3000:3000 \
+        docker run -d --name sharestuff-ci \
+          -p 3000:3000 \
           -e NODE_ENV=ci \
           -e ENABLE_DB=false \
           sharestuff-api-ci
@@ -39,7 +40,7 @@ jobs:
       run: sleep 10
 
     - name: Show container logs
-      run: docker logs $(docker ps -q --filter ancestor=sharestuff-api-ci)
+      run: docker logs sharestuff-ci
 
     - name: Health check
       run: curl -f http://localhost:3000/health
