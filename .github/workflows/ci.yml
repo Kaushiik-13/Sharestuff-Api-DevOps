@@ -11,39 +11,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ Get code from GitHub
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 2️⃣ Setup Node.js
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
-    # 3️⃣ Install dependencies
     - name: Install dependencies
       run: npm install
 
-    # 4️⃣ Build NestJS app
     - name: Build application
       run: npm run build
 
-    # 5️⃣ Build Docker image
     - name: Build Docker image
       run: docker build -t sharestuff-api-ci .
 
-    # 6️⃣ Run container for health check
     - name: Run container for health check
       run: |
         docker run -d -p 3000:3000 \
-           -e NODE_ENV=ci \
-           sharestuff-api-ci
+          -e NODE_ENV=ci \
+          -e ENABLE_DB=false \
+          sharestuff-api-ci
 
-    # 7️⃣ Wait for app to start
     - name: Wait for app to start
       run: sleep 10
 
-    # 8️⃣ Health check
+    - name: Show container logs
+      run: docker logs $(docker ps -q --filter ancestor=sharestuff-api-ci)
+
     - name: Health check
       run: curl -f http://localhost:3000/health

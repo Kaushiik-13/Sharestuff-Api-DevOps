@@ -21,36 +21,17 @@ import { rentalRequestModule } from './rental_requests/rentalRequest.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        // 👇 Skip DB in CI
-        if (config.get('NODE_ENV') === 'ci') {
-          return {
-            type: 'mysql',
-            host: 'localhost',
-            port: 3306,
-            username: 'dummy',
-            password: 'dummy',
-            database: 'dummy',
-            entities: [],
-            synchronize: false,
-            autoLoadEntities: false,
-          };
-        }
-
-        // 👇 Normal DB config
-        return {
-          type: 'mysql',
-          host: config.getOrThrow('DB_HOST'),
-          port: config.getOrThrow<number>('DB_PORT'),
-          username: config.getOrThrow('DB_USER'),
-          password: config.getOrThrow('DB_PASSWORD'),
-          database: config.getOrThrow('DB_NAME'),
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false,
-        };
-      },
+      useFactory: (config: ConfigService) => ({
+        type: 'mysql',
+        host: config.getOrThrow('DB_HOST'),
+        port: Number(config.getOrThrow('DB_PORT')),
+        username: config.getOrThrow('DB_USERNAME'),
+        password: config.getOrThrow('DB_PASSWORD'),
+        database: config.getOrThrow('DB_NAME'),
+        autoLoadEntities: true,
+        synchronize: false,
+      }),
     }),
-
 
 
     // Mailer configuration
