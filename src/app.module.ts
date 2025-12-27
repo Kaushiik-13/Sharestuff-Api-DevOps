@@ -21,53 +21,54 @@ const enableMailer = process.env.ENABLE_MAILER !== 'false';
     // Load env vars globally
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'ci',
     }),
 
-    // ✅ Database (enabled only when ENABLE_DB !== false)
+    // Database (enabled only when ENABLE_DB !== false)
     ...(enableDb
       ? [
-          TypeOrmModule.forRootAsync({
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-              type: 'mysql',
-              host: config.getOrThrow('DB_HOST'),
-              port: Number(config.getOrThrow('DB_PORT')),
-              username: config.getOrThrow('DB_USERNAME'),
-              password: config.getOrThrow('DB_PASSWORD'),
-              database: config.getOrThrow('DB_NAME'),
-              autoLoadEntities: true,
-              synchronize: false,
-            }),
+        TypeOrmModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (config: ConfigService) => ({
+            type: 'mysql',
+            host: config.getOrThrow('DB_HOST'),
+            port: Number(config.getOrThrow('DB_PORT')),
+            username: config.getOrThrow('DB_USERNAME'),
+            password: config.getOrThrow('DB_PASSWORD'),
+            database: config.getOrThrow('DB_NAME'),
+            autoLoadEntities: true,
+            synchronize: false,
           }),
-        ]
+        }),
+      ]
       : []),
 
-    // ✅ Mailer (enabled only when ENABLE_MAILER !== false)
+    // Mailer (enabled only when ENABLE_MAILER !== false)
     ...(enableMailer
       ? [
-          MailerModule.forRootAsync({
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-              transport: {
-                service: 'gmail',
-                auth: {
-                  user: config.getOrThrow('MAIL_USER'),
-                  pass: config.getOrThrow('MAIL_PASS'),
-                },
+        MailerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (config: ConfigService) => ({
+            transport: {
+              service: 'gmail',
+              auth: {
+                user: config.getOrThrow('MAIL_USER'),
+                pass: config.getOrThrow('MAIL_PASS'),
               },
-              defaults: {
-                from: '"ShareStuff Support" <no-reply@sharestuff.com>',
-              },
-              template: {
-                dir: join(__dirname, 'templates'),
-                adapter: new HandlebarsAdapter(),
-                options: { strict: true },
-              },
-            }),
+            },
+            defaults: {
+              from: '"ShareStuff Support" <no-reply@sharestuff.com>',
+            },
+            template: {
+              dir: join(__dirname, 'templates'),
+              adapter: new HandlebarsAdapter(),
+              options: { strict: true },
+            },
           }),
-        ]
+        }),
+      ]
       : []),
 
     // Feature modules
@@ -79,4 +80,4 @@ const enableMailer = process.env.ENABLE_MAILER !== 'false';
   ],
   controllers: [HealthController],
 })
-export class AppModule {}
+export class AppModule { }
