@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
-
+import { HealthController } from './health/health.controller';
 import { AuthModule } from './auth/auth.module';
 import { SellerProfileModule } from './seller_profile_creation/sellerProfile.module';
 import { itemListingModule } from './item_listing/itemListing.module';
@@ -64,5 +64,6 @@ import { rentalRequestModule } from './rental_requests/rentalRequest.module';
     ReviewsModule,
     rentalRequestModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule { }

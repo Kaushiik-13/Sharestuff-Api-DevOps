@@ -5,29 +5,49 @@ on:
     branches: [ "main" ]
   pull_request:
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Get code from GitHub
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # 1️⃣ Get code from GitHub
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    # 2️⃣ Setup Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
 
-      # 3️⃣ Install dependencies
-      - name: Install dependencies
-        run: npm install
+    # 3️⃣ Install dependencies
+    - name: Install dependencies
+      run: npm install
 
-      # 4️⃣ Build NestJS app
-      - name: Build application
-        run: npm run build
+    # 4️⃣ Build NestJS app
+    - name: Build application
+      run: npm run build
 
-      # 5️⃣ Build Docker image (VERY IMPORTANT)
-      - name: Build Docker image
-        run: docker build -t sharestuff-api-ci .
+    # 5️⃣ Build Docker image
+    - name: Build Docker image
+      run: docker build -t sharestuff-api-ci .
+
+    # 6️⃣ Run container for health check
+    - name: Run container for health check
+      run: |
+        docker run -d -p 3000:3000 \
+          -e DB_HOST=${{ secrets.DB_HOST }} \
+          -e DB_PORT=${{ secrets.DB_PORT }} \
+          -e DB_USER=${{ secrets.DB_USER }} \
+          -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+          -e DB_NAME=${{ secrets.DB_NAME }} \
+          sharestuff-api-ci
+
+    # 7️⃣ Wait for app to start
+    - name: Wait for app to start
+      run: sleep 10
+
+    # 8️⃣ Health check
+    - name: Health check
+      run: curl -f http://localhost:3000/health
