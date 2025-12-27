@@ -17,7 +17,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: 18
 
     - name: Install dependencies
       run: npm install
@@ -31,19 +31,12 @@ jobs:
     - name: Run container (CI mode)
       run: |
         docker run -d --name sharestuff-ci \
-          --network host \
+          -p 3000:3000 \
           -e NODE_ENV=ci \
-          -e PORT=3000 \
-          -e ENABLE_DB=false \
-          -e ENABLE_MAILER=false \
-          -e ENABLE_AUTH=false \
           sharestuff-api-ci
 
-    - name: Show running containers
-      run: docker ps -a
-
     - name: Wait for app to start
-      run: sleep 20
+      run: sleep 15
 
     - name: Show container logs
       run: docker logs sharestuff-ci || true
@@ -51,11 +44,12 @@ jobs:
     - name: Health check
       run: curl -f http://localhost:3000/health
 
-    - name: Tag Docker image
-      run: docker tag sharestuff-api-ci kaushiik13/sharestuff-api:latest
+    # Docker Hub login (REQUIRED)
+    - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \ -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-    - name: Push Docker image
-      run: docker push kaushiik13/sharestuff-api:latest
+    - name: Tag Docker image
+      run: docker tag sharestuff-api-ci \ ${{ secrets.DOCKERHUB_USERNAME }}/sharestuff-api:latest
 
     - name: Push Docker image
       run: docker push \ ${{ secrets.DOCKERHUB_USERNAME }}/sharestuff-api:latest
