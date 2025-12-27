@@ -31,6 +31,7 @@ jobs:
     - name: Run container
       run: |
         docker run -d --name sharestuff-ci \
+          --network host \
           -p 3000:3000 \
           -e NODE_ENV=ci \
           -e PORT=3000 \
