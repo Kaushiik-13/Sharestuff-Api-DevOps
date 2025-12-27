@@ -36,6 +36,7 @@ jobs:
           -e PORT=3000 \
           -e ENABLE_DB=false \
           -e ENABLE_MAILER=false \
+          -e ENABLE_AUTH=false \
           sharestuff-api-ci
 
     - name: Show running containers
@@ -48,4 +49,4 @@ jobs:
       run: docker logs sharestuff-ci || true
 
     - name: Health check
-      run: curl -v http://localhost:3000/health
+      run: curl -f http://localhost:3000/health
