@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
+
 import { HealthController } from './health/health.controller';
 import { AuthModule } from './auth/auth.module';
 import { SellerProfileModule } from './seller_profile_creation/sellerProfile.module';
@@ -13,28 +14,31 @@ import { rentalRequestModule } from './rental_requests/rentalRequest.module';
 
 @Module({
   imports: [
-    // Load .env file globally
     ConfigModule.forRoot({
       isGlobal: true,
     }),
 
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'mysql',
-        host: config.getOrThrow('DB_HOST'),
-        port: Number(config.getOrThrow('DB_PORT')),
-        username: config.getOrThrow('DB_USERNAME'),
-        password: config.getOrThrow('DB_PASSWORD'),
-        database: config.getOrThrow('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: false,
-      }),
-    }),
+    // ✅ Enable DB only when ENABLE_DB !== 'false'
+    ...(process.env.ENABLE_DB !== 'false'
+      ? [
+          TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+              type: 'mysql',
+              host: config.getOrThrow('DB_HOST'),
+              port: Number(config.getOrThrow('DB_PORT')),
+              username: config.getOrThrow('DB_USERNAME'),
+              password: config.getOrThrow('DB_PASSWORD'),
+              database: config.getOrThrow('DB_NAME'),
+              autoLoadEntities: true,
+              synchronize: false,
+            }),
+          }),
+        ]
+      : []),
 
-
-    // Mailer configuration
+    // Mailer (optional – can also be gated later)
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -42,8 +46,8 @@ import { rentalRequestModule } from './rental_requests/rentalRequest.module';
         transport: {
           service: 'gmail',
           auth: {
-            user: config.getOrThrow<string>('MAIL_USER'),
-            pass: config.getOrThrow<string>('MAIL_PASS'),
+            user: config.getOrThrow('MAIL_USER'),
+            pass: config.getOrThrow('MAIL_PASS'),
           },
         },
         defaults: {
@@ -57,7 +61,6 @@ import { rentalRequestModule } from './rental_requests/rentalRequest.module';
       }),
     }),
 
-    // Other feature modules
     AuthModule,
     SellerProfileModule,
     itemListingModule,
@@ -66,4 +69,4 @@ import { rentalRequestModule } from './rental_requests/rentalRequest.module';
   ],
   controllers: [HealthController],
 })
-export class AppModule { }
+export class AppModule {}
