@@ -28,11 +28,10 @@ jobs:
     - name: Build Docker image
       run: docker build -t sharestuff-api-ci .
 
-    - name: Run container
+    - name: Run container (CI mode)
       run: |
         docker run -d --name sharestuff-ci \
           --network host \
-          -p 3000:3000 \
           -e NODE_ENV=ci \
           -e PORT=3000 \
           -e ENABLE_DB=false \

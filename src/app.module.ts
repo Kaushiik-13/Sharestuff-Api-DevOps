@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
@@ -19,13 +19,13 @@ const enableAuth = process.env.ENABLE_AUTH !== 'false';
 
 @Module({
   imports: [
-    // Config
+    // 🔹 Config
     ConfigModule.forRoot({
       isGlobal: true,
       ignoreEnvFile: process.env.NODE_ENV === 'ci',
     }),
 
-    // Database
+    // 🔹 Database core
     ...(enableDb
       ? [
           TypeOrmModule.forRootAsync({
@@ -45,7 +45,20 @@ const enableAuth = process.env.ENABLE_AUTH !== 'false';
         ]
       : []),
 
-    // Mailer
+    // 🔹 DB-dependent feature modules
+    ...(enableDb
+      ? [
+          SellerProfileModule,
+          itemListingModule,
+          ReviewsModule,
+          rentalRequestModule,
+        ]
+      : []),
+
+    // 🔹 Auth (usually DB-backed)
+    ...(enableAuth ? [AuthModule] : []),
+
+    // 🔹 Mailer
     ...(enableMailer
       ? [
           MailerModule.forRootAsync({
@@ -71,15 +84,6 @@ const enableAuth = process.env.ENABLE_AUTH !== 'false';
           }),
         ]
       : []),
-
-    // Auth
-    ...(enableAuth ? [AuthModule] : []),
-
-    // Feature modules
-    SellerProfileModule,
-    itemListingModule,
-    ReviewsModule,
-    rentalRequestModule,
   ],
   controllers: [HealthController],
 })
