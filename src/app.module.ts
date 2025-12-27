@@ -12,14 +12,19 @@ import { itemListingModule } from './item_listing/itemListing.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { rentalRequestModule } from './rental_requests/rentalRequest.module';
 
+// 🔑 Feature flags
+const enableDb = process.env.ENABLE_DB !== 'false';
+const enableMailer = process.env.ENABLE_MAILER !== 'false';
+
 @Module({
   imports: [
+    // Load env vars globally
     ConfigModule.forRoot({
       isGlobal: true,
     }),
 
-    // ✅ Enable DB only when ENABLE_DB !== 'false'
-    ...(process.env.ENABLE_DB !== 'false'
+    // ✅ Database (enabled only when ENABLE_DB !== false)
+    ...(enableDb
       ? [
           TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
@@ -38,29 +43,34 @@ import { rentalRequestModule } from './rental_requests/rentalRequest.module';
         ]
       : []),
 
-    // Mailer (optional – can also be gated later)
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        transport: {
-          service: 'gmail',
-          auth: {
-            user: config.getOrThrow('MAIL_USER'),
-            pass: config.getOrThrow('MAIL_PASS'),
-          },
-        },
-        defaults: {
-          from: '"ShareStuff Support" <no-reply@sharestuff.com>',
-        },
-        template: {
-          dir: join(__dirname, 'templates'),
-          adapter: new HandlebarsAdapter(),
-          options: { strict: true },
-        },
-      }),
-    }),
+    // ✅ Mailer (enabled only when ENABLE_MAILER !== false)
+    ...(enableMailer
+      ? [
+          MailerModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+              transport: {
+                service: 'gmail',
+                auth: {
+                  user: config.getOrThrow('MAIL_USER'),
+                  pass: config.getOrThrow('MAIL_PASS'),
+                },
+              },
+              defaults: {
+                from: '"ShareStuff Support" <no-reply@sharestuff.com>',
+              },
+              template: {
+                dir: join(__dirname, 'templates'),
+                adapter: new HandlebarsAdapter(),
+                options: { strict: true },
+              },
+            }),
+          }),
+        ]
+      : []),
 
+    // Feature modules
     AuthModule,
     SellerProfileModule,
     itemListingModule,

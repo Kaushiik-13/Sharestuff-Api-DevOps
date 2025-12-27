@@ -34,6 +34,7 @@ jobs:
           -p 3000:3000 \
           -e NODE_ENV=ci \
           -e ENABLE_DB=false \
+          -e ENABLE_MAILER=false \
           sharestuff-api-ci
 
     - name: Wait for app to start
