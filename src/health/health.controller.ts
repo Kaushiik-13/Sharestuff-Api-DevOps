@@ -6,4 +6,9 @@ export class HealthController {
   health() {
     return { status: 'ok' };
   }
+
+  @Get()
+  healthv1() {
+    return { status: 'v1-ok' };
+  }
 }
