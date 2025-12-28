@@ -46,10 +46,10 @@ jobs:
 
     # Docker Hub login (REQUIRED)
     - name: Login to Docker Hub
-      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \ -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
     - name: Tag Docker image
-      run: docker tag sharestuff-api-ci \ ${{ secrets.DOCKERHUB_USERNAME }}/sharestuff-api:latest
+      run: docker tag sharestuff-api-ci ${{ secrets.DOCKERHUB_USERNAME }}/sharestuff-api:latest
 
     - name: Push Docker image
-      run: docker push \ ${{ secrets.DOCKERHUB_USERNAME }}/sharestuff-api:latest
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/sharestuff-api:latest
